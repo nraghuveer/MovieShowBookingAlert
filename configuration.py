@@ -1,8 +1,6 @@
 from configparser import SafeConfigParser
 import os.path
 
-PROJECT_ROOT_DIR = os.getcwd()
-
 class Options():
     """
     Acts as proxy class for storing the options of a section as attributes
