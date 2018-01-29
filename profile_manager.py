@@ -1,8 +1,9 @@
 import enum
 import os
 import importlib
+from selenium import webdriver
 
-from definitions import source_base_urls, source_keywords, profile_engines
+from definitions import source_base_urls, source_keywords, profile_engines,PROJECT_ROOT_DIR
 
 class ProfileManager:
     """
@@ -29,16 +30,31 @@ class ProfileManager:
             raise Exception('Engine {}, not specified in the profile engine keywords.')
 
         # get the base url for the source
-        url = source_base_urls[self.source_keyword]+'/'+city
+        url = self.get_city_url(city)
 
+        profile = self.get_profile(url, engine_keyword, self.get_browser())
+
+        profile.execute()
+
+
+    def get_profile(self, url, engine_keyword, browser):
+        """
+        create and return a profile instance base on the source
+        """
         try:
             # get the module for the profile
             profile_module = importlib.import_module('profiles.'+self.source_keyword+'.'+engine_keyword)
             # create profile instance
-            profile = getattr(profile_module, 'Profile')(url)
-            profile.execute()
+            profile = getattr(profile_module, 'Profile')(url, self.configuration, browser)
+            return profile
         except KeyError:
             raise Exception('Engine with keyword {} not found.'.format(engine_keyword))
+
+    def get_city_url(self, city):
+        """
+        construct the city specific url from the source keyword base url
+        """
+        return source_base_urls[self.source_keyword]+'/'+city
 
     def get_browser(self):
         """
@@ -47,11 +63,10 @@ class ProfileManager:
         options = webdriver.ChromeOptions()
         options.add_argument(' - incognito')
 
-        browser = webdriver.Chrome(executable_path= \
-        os.path.join(PROJECT_ROOT_DIR, self.configuration.web_driver.file_path), chrome_options= options)
+        driver_path = PROJECT_ROOT_DIR + self.configuration.web_driver.file_path
+        # convert to raw string
+        driver_path.replace('\\', '\\\\')
+        print(driver_path)
+        browser = webdriver.Chrome(executable_path= driver_path, chrome_options= options)
 
         return browser
-
-
-
-

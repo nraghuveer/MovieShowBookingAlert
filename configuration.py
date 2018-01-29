@@ -26,7 +26,8 @@ class Configuration:
     """
     # only section-options that are in this list are parsed
     defined_configurations = set([
-        ('web_driver', 'file_path')
+        ('web_driver', 'file_path'),
+        ('connection', 'timeout')
     ])
 
     def __init__(self, file_path):
